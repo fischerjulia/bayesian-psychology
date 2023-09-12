@@ -1,0 +1,24 @@
+---
+title: "Tutorial 1: Why Bayes? For the social scientist"
+author: "Julia Fischer"
+date: '2023-09-07'
+output:
+  rmdformats::robobook:
+    highlight: tango
+  git_document:
+    toc: true
+    toc_depth: 4
+    code_download: true
+  word_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Technical objective: Understand the general premises and mechanisms of the Bayesian approach to statistical analysis**
+
+**Substantive objective: N/A**
