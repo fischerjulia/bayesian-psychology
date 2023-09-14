@@ -1,11 +1,11 @@
 ---
-title: "Tutorial 1: Why Bayes? For the social scientist"
+title: "Tutorial 1: Bayesian statistics for the social scientist"
 author: "Julia Fischer"
 date: '2023-09-07'
 output:
   rmdformats::robobook:
     highlight: tango
-  git_document:
+  html_document:
     toc: true
     toc_depth: 4
     code_download: true
@@ -19,6 +19,12 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-**Technical objective: Understand the general premises and mechanisms of the Bayesian approach to statistical analysis**
+**Technical objective:** Understand the general premises and mechanisms of the Bayesian approach to statistical analysis
 
-**Substantive objective: N/A**
+**Substantive objective:** N/A
+
+# 1 Frequentist vs. Bayesian statistics
+
+At some point in your education, you've probably learned about statistics, whether that be from a class, a book, or a YouTube video. When students learn about statistics in school, they typically learn what is called *frequentist statistics*. Frequentist statistics covers topics such as null hypothesis significance testing, *p*-values, and confidence intervals. You may be surprised to learn that this standard set of statistical methods is really more of a framework &mdash; a framework that is increasingly being called into question.
+
+A link that provides some good explanations for future use: https://www.austincc.edu/mparker/stat/nov04/talk_nov04.pdf
