@@ -1,0 +1,19 @@
+---
+title: "Bayes Net Example - Happiness"
+author: "Julia Fischer"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(bnlearn)
+```
+
+
+```{r read dsc}
+filepath = "bn_example.dsc"
+happy_bn <- read.dsc(filepath, debug = FALSE)
+happy_bn
+bnlearn.plot(happy_bn)
+```
