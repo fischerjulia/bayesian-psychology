@@ -42,5 +42,5 @@ bn_fit
 col_1 <- c("Sleep", "Happy", "Happy")
 col_2 <- c("Happy", "Donate", "Volunteer")
 arc_matrix <- cbind(col_1, col_2)
-graphviz.plot(bn_fit, highlight = c(list(nodes = c("Sleep", "Happy", "Donate", "Volunteer"), arcs = arc_matrix, col = "black", fill = "lightgreen", lwd = 2)))
+graphviz.plot(bn_fit, highlight = c(list(nodes = c("Sleep", "Happy", "Donate", "Volunteer"), arcs = arc_matrix, col = "black", fill = "lightgreen", lwd = 1.5)))
 ```
