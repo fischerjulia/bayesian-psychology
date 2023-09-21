@@ -8,12 +8,36 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(bnlearn)
+library(Rgraphviz)
 ```
 
+```{r specify bn}
+sleep <- matrix(c(0.7, 0.3), ncol = 2, dimnames = list(NULL, c("True", "False")))
+sleep
 
-```{r read dsc}
-filepath = "bn_example.dsc"
-happy_bn <- read.dsc(filepath, debug = FALSE)
-happy_bn
-bnlearn.plot(happy_bn)
+happy <- c(0.8, 0.2, 0.4, 0.6)
+dim(happy) = c(2, 2)
+dimnames(happy) = list("Happy" = c("True", "False"), "Sleep" = c("True", "False"))
+happy
+
+donate <- c(0.5, 0.5, 0.1, 0.9)
+dim(donate) = c(2, 2)
+dimnames(donate) = list("Donate" = c("True", "False"), "Happy" = c("True", "False"))
+donate
+
+volunteer <- c(0.6, 0.4, 0.2, 0.8)
+dim(volunteer) = c(2, 2)
+dimnames(volunteer) = list("Volunteer" = c("True", "False"), "Happy" = c("True", "False"))
+volunteer
+```
+
+```{r fit bn}
+#bn_structure <- model2network("[A][B|A][C|B][D|B]")
+bn_structure <- model2network("[Sleep][Happy|Sleep][Donate|Happy][Volunteer|Happy]")
+bn_fit = custom.fit(bn_structure, dist = list(Sleep = sleep, Happy = happy, Donate = donate, Volunteer = volunteer))
+bn_fit
+```
+
+```{r plot bn}
+graphviz.plot(bn_fit)
 ```
