@@ -2,7 +2,17 @@
 title: "Sample Bayesian Cognitive Model"
 author: "Julia Fischer"
 date: "2023-09-28"
-output: html_document
+output:
+  rmdformats::robobook:
+    highlight: tango
+  html_document:
+    toc: true
+    toc_depth: 4
+    code_download: true
+  word_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -29,3 +39,26 @@ filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_int
 #read in the .csv file using the url() function
 AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
 ```
+
+Note: This code doesn't run because WebPPL has not been set up (yet).  
+
+Contributions of personal stress level and partner's gender to dominance in a social interaction:  
+```{js gender stress dominance}
+var getIgdom = function(partnerGender, stress) { // igdom = interaction-level dominance
+  if (partnerGender == 1) { // partner is female
+    return stress == 1 ? 7 : 5
+  } // partner is male
+  return stress == 1 ? 6 : 4
+}
+
+var model = function () {
+    var partnerGender = flip() // equal chance of having male vs. female partner
+    var stress = flip(0.3) // 30% chance of being stressed
+    var igdom = getIgdom(partnerGender, stress)
+    condition(igdom >= 5)
+    return partnerGender
+}
+var dist = Infer({method: 'rejection', samples: 1000}, model)
+viz(dist)
+```
+
