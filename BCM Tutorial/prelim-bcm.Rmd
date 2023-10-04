@@ -1,5 +1,5 @@
 ---
-title: "Sample Bayesian Cognitive Model"
+title: "Preliminary Bayesian Cognitive Model"
 author: "Julia Fischer"
 date: "2023-09-28"
 output:
@@ -62,3 +62,4 @@ var dist = Infer({method: 'rejection', samples: 1000}, model)
 viz(dist)
 ```
 
+# TODO: dig into the data and try to make a model that matches the data
