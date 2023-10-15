@@ -16,6 +16,7 @@ editor_options:
 ---
 
 TODO: write an introductory section
+TODO: add section headers throughout (using # and ##, etc.) so that they show up under robobook ToC
 TODO: add commentary throughout to guide reader through the steps of the tutorial
 
 ```{r setup, include=FALSE}
