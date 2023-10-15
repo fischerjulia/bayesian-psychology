@@ -15,6 +15,8 @@ editor_options:
   chunk_output_type: inline
 ---
 
+In this tutorial, we will learn the basics of Bayesian cognitive modeling, a technique that simulates human cognition as a Bayesian operation.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
