@@ -20,23 +20,23 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r person-level data}
-#set filepath for data file
+# set filepath for data file
 filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_persons_2019_0501.csv"
-#read in the .csv file using the url() function
+# read in the .csv file using the url() function
 AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
 ```
 
 ```{r day-level data}
-#set filepath for data file
+# set filepath for data file
 filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_daily_2019_0501.csv"
-#read in the .csv file using the url() function
+# read in the .csv file using the url() function
 AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
 ```
 
 ```{r interaction-level data}
-#set filepath for data file
+# set filepath for data file
 filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_interaction_2019_0501.csv"
-#read in the .csv file using the url() function
+# read in the .csv file using the url() function
 AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
 ```
 
