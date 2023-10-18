@@ -15,17 +15,36 @@ library(tidyverse)
 ```
 
 ```{r generate data}
-prior <- rnorm(n = 1000, mean = 0, sd = 1)
+prior_density <- rnorm(n = 200000, mean = -5, sd = 4)
+likelihood_density <- rnorm(n = 200000, mean = 6, sd = 3.5)
+posterior_density <- rnorm(n = 200000, mean = 1.5, sd = 4.75)
+prior_dotplot <- rnorm(n = 2000, mean = -5, sd = 4)
+likelihood_dotplot <- rnorm(n = 2000, mean = 6, sd = 3.5)
+posterior_dotplot <- rnorm(n = 2000, mean = 1.5, sd = 4.75)
+sim_data <- data.frame(prior_density, likelihood_density, posterior_density, prior_dotplot, likelihood_dotplot, posterior_dotplot)
 ```
 
 ```{r plot normal distrib}
-ggplot(data.frame(prior), aes(prior)) +
-  geom_histogram(aes(y=after_stat(density)), binwidth=0.3, 
-                 fill="skyblue", color="black") +
-  geom_density(alpha=.2, fill="#FF6655") + 
-  labs(title="Histogram of Random Numbers from a Normal Distribution",
-  x="Value",
-  y="Density") +
-  theme_minimal() +
-  theme(panel.grid.major = element_line(linetype = "dashed"))
+# ggplot(data.frame(sim_data$prior), aes(sim_data$prior)) +
+#   geom_histogram(aes(y=after_stat(density)), binwidth=0.05, 
+#                  fill="skyblue", color="black") +
+#   geom_density(alpha=.2, fill="#FF6655") + 
+#     geom_histogram(aes(y=after_stat(density)), binwidth=0.05, 
+#                  fill="skyblue", color="black") +
+#   geom_density(alpha=.2, fill="#FF6655") + 
+#   theme_classic()
 ```
+
+```{r plot 3 normal distribs}
+ggplot(sim_data) +
+  geom_density(aes(prior_density, linewidth=0.2), color = "lightpink") +
+  geom_dotplot(aes(prior_dotplot, alpha = 0.7), color = "lightpink", fill = "lightpink", binwidth = 0.3, dotsize = 0.0155) +
+  geom_density(aes(likelihood_density, linewidth=0.2), color = "lightblue") +
+  geom_dotplot(aes(likelihood_dotplot, alpha = 0.7), color = "lightblue", fill = "lightblue", binwidth = 0.3, dotsize = 0.0155) +
+  geom_density(aes(posterior_density, linewidth=0.2), color = "lavender") +
+  geom_dotplot(aes(posterior_dotplot, alpha = 0.7), color = "lavender", fill = "lavender", binwidth = 0.3, dotsize = 0.0155) +
+  ylim(0, 0.12) +
+  theme_classic()
+```
+
+Idea: make many noisy versions of the three distributions; plot the main, non-noisy distributions in bold; plot the others in non-bold, lower-alpha style
