@@ -28,8 +28,9 @@ In this tutorial, we will be applying the Bayesian lens to the estimation of par
 
 Briefly, in *cognitive reappraisal*, one changes the way in which they think about an emotionally-inducing event in order to alter their emotional response to that event. For example, instead of thinking about an exam as a difficult and consequential test of their abilities, a student might choose to frame the exam as an opportunity to show what they have learned. In *expressive suppression*, one regulates their emotions by inhibiting their external displays of emotion. For example, a student who feels nervous about an upcoming exam may stop themselves from showing a worried look on their face and telling their friends that they feel nervous. More information on these two emotion regulation strategies can be found in Gross & John (2003).
 
-TODO: add more about the participants of the study, the data, and previous literature about the link between emotion regulation/sleep and negative affect/affective regulation
+In our analysis, we will be looking at the relationships among these emotion regulation strategies, sleep, and negative affect (emotion). An individual's emotion regulation and coping strategies are thought to moderate the impact of stress on sleep quality (Kahn et al., 2013). We might also be interested in whether emotion regulation strategies moderate the impact of sleep on negative emotions the following day. In other words, does a particular emotion regulation strategy help me manage my negative emotions after a night of poor sleep? 
 
+While we may not be able to precisely pin down the causal structure of the interactions between emotion regulation, sleep, and negative affect, we can run a regression analysis to get some preliminary insights. Our data come from the AMIB study, a multiple time-scale study of college students (Ram et al., 2012). In particular, we will be looking at students' daily self-reports of their sleep and negative affect over the course of eight days, as well as their dispositional reappraisal and suppression scores. The data can be downloaded from https://thechangelab.stanford.edu/collaborations/the-amib-data/.
 
 TODO: add section headers throughout (using # and ##, etc.) so that they show up under robobook ToC
 TODO: add commentary throughout to guide reader through the steps of the tutorial
@@ -40,8 +41,11 @@ TODO: use this link for some example plots/analysis of Bayesian MLMs: https://ww
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(brms)
+library(psych)
 library(tidyverse)
 ```
+
+We begin by loading in the data from the online repository.
 
 ```{r person-level data}
 # set filepath for data file
@@ -57,14 +61,9 @@ filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_dai
 AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
 ```
 
-```{r interaction-level data}
-# set filepath for data file
-filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_interaction_2019_0501.csv"
-# read in the .csv file using the url() function
-AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
-```
-
 # Data manipulation
+
+We merge the daily-level variables (participant ID, day, hours of sleep, and negative affect) with the person-level variables (participant ID, reappraisal score, suppression score) into a single dataset.
 
 ```{r format data}
 # subset to day-level variables of interest
@@ -75,6 +74,8 @@ bpe_persons <- AMIB_persons[,c("id", "erq_reap", "erq_supp")]
 bpe_data <- merge(bpe_daily, bpe_persons, by = "id")
 ```
 
+We center the emotion regulation questionnaire scores to facilitate the interpretation of model results.
+
 ```{r center predictor}
 # center the erq subscale score variables for interpretability
 bpe_data$erq_reap_c <- scale(bpe_data$erq_reap, center=TRUE,scale=FALSE)[,1]
@@ -83,10 +84,20 @@ bpe_data$erq_supp_c <- scale(bpe_data$erq_supp, center=TRUE,scale=FALSE)[,1]
 
 # Initial data plotting
 
+Before running our models, it can be helpful to examine the raw data.
+
+```{r plot correlations}
+# calculate correlations
+cor(bpe_data[ ,c(-1, -5, -6)], use = "complete.obs") # dropping the id and non-centered erq columns
+# plot correlations
+pairs.panels(bpe_data[ ,c(-1, -5, -6)])
+```
+
+We see relatively weak correlations overall, but note a weak negative correlation between hours of sleep and level of negative affect (-0.16), as well as a weak negative correlation between cognitive reappraisal and expressive suppression (-0.13). We also observe a weak negative correlation between day in study and level of negative affect (-0.14).
+
 ```{r plot data}
 #TODO: plot the raw data to get a sense for any trends in the data
-      # correlation matrix
-      # person-by-person plot
+      # person-by-person & prototypical plot of negaff vs. sleep, w/ points color coded by higher reap (pink) vs. higher supp (blue)
 ```
 
 # Cognitive reappraisal model
@@ -129,3 +140,7 @@ TODO: write up a final analysis/conclusion for this tutorial
 # References
 
 Gross, J. J., & John, O. P. (2003). Individual differences in two emotion regulation processes: Implications for affect, relationships, and well-being. *Journal of Personality and Social Psychology*, *85*(2), 348–362. https://doi.org/10.1037/0022-3514.85.2.348
+
+Kahn, M., Sheppes, G., & Sadeh, A. (2013). Sleep and emotions: Bidirectional links and underlying mechanisms. *International Journal of Psychophysiology*, *89*(2), 218–228. https://doi.org/10.1016/j.ijpsycho.2013.05.010
+
+Ram, N., Conroy, D. E., Pincus, A. L., Hyde, A. L., & Molloy, L. E. (2012). Tethering theory to method: Using measures of intraindividual variability to operationalize individuals’ dynamic characteristics. In G. Hancock & J. Harring (Eds.), *Advances in longitudinal methods in the social and behavioral sciences* (pp. 81-110). New York: Information Age.
