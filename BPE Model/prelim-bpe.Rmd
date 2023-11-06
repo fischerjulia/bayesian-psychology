@@ -1,7 +1,7 @@
 ---
-title: "Preliminary Bayesian Parameter Estimation Model"
+title: "Modeling with uncertainty: A Bayesian parameter estimation tutorial"
 author: "Julia Fischer"
-date: "2023-10-04"
+date: "Fall 2023"
 output:
   rmdformats::robobook:
     highlight: tango
@@ -15,9 +15,27 @@ editor_options:
   chunk_output_type: inline
 ---
 
-TODO: write an introductory section
+# Introduction
+
+## Technical objective
+Learn the basics of Bayesian parameter estimation and how it differs from frequentist parameter estimation
+
+## Substantive research question
+How do emotion regulation strategies moderate the association between sleep and negative emotions?
+
+## Introductory remarks
+In this tutorial, we will be applying the Bayesian lens to the estimation of parameters in a multilevel linear model. In particular, we will examine two emotion regulation strategies, cognitive reappraisal and expressive suppression, and whether they moderate the association between hours of sleep at night and negative affect the following day.
+
+Briefly, in *cognitive reappraisal*, one changes the way in which they think about an emotionally-inducing event in order to alter their emotional response to that event. For example, instead of thinking about an exam as a difficult and consequential test of their abilities, a student might choose to frame the exam as an opportunity to show what they have learned. In *expressive suppression*, one regulates their emotions by inhibiting their external displays of emotion. For example, a student who feels nervous about an upcoming exam may stop themselves from showing a worried look on their face and telling their friends that they feel nervous. More information on these two emotion regulation strategies can be found in Gross & John (2003).
+
+TODO: add more about the participants of the study, the data, and previous literature about the link between emotion regulation/sleep and negative affect/affective regulation
+
+
 TODO: add section headers throughout (using # and ##, etc.) so that they show up under robobook ToC
 TODO: add commentary throughout to guide reader through the steps of the tutorial
+TODO: use this link for some example plots/analysis of Bayesian MLMs: https://www.rensvandeschoot.com/tutorials/brms-started/
+
+# Preliminaries
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -46,6 +64,8 @@ filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_int
 AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
 ```
 
+# Data manipulation
+
 ```{r format data}
 # subset to day-level variables of interest
 bpe_daily <- AMIB_daily[,c("id", "day", "slphrs", "negaff")]
@@ -61,19 +81,20 @@ bpe_data$erq_reap_c <- scale(bpe_data$erq_reap, center=TRUE,scale=FALSE)[,1]
 bpe_data$erq_supp_c <- scale(bpe_data$erq_supp, center=TRUE,scale=FALSE)[,1]
 ```
 
+# Initial data plotting
+
 ```{r plot data}
 #TODO: plot the raw data to get a sense for any trends in the data
       # correlation matrix
       # person-by-person plot
 ```
 
+# Cognitive reappraisal model
+
+TODO: add model equation in Latex
+
 ```{r bpe model reap}
-bpe.reap <- brm(bf(negaff ~ b0 + b1 * day + b2 * slphrs + b3 * erq_reap_c + b4 * slphrs * erq_reap_c, b0 ~ 1 + (1|id), b1 ~ 1 + (1|id), b2 ~ 1 + (1|id), b3 ~ 1 + (1|id), b4 ~ 1 + (1|id), nl = TRUE), data = bpe_data, family = gaussian(), prior = c(
-  prior(normal(0, 1), nlpar = "b0"),
-  prior(normal(0, 1), nlpar = "b1"),
-  prior(normal(0, 1), nlpar = "b2"),
-  prior(normal(0, 1), nlpar = "b3"),
-  prior(normal(0, 1), nlpar = "b4")),
+bpe.reap <- brm(negaff ~ 1 + day + slphrs + erq_reap_c + slphrs:erq_reap_c + (1 + slphrs + erq_reap_c|id), data = bpe_data, family = gaussian(),
   iter = 2000, chains = 4, cores = 4)
 summary(bpe.reap)
 bayes_R2(bpe.reap)
@@ -83,13 +104,12 @@ plot(bpe.reap)
 TODO: interpret model results (including Bayesian significance testing)
 TODO: make a visualization of this model that shows the prototypical individual and all individuals
 
+# Expressive suppression model
+
+TODO: add model equation in Latex
+
 ```{r bpe model supp}
-bpe.supp <- brm(bf(negaff ~ b0 + b1 * day + b2 * slphrs + b3 * erq_supp_c + b4 * slphrs * erq_supp_c, b0 ~ 1 + (1|id), b1 ~ 1 + (1|id), b2 ~ 1 + (1|id), b3 ~ 1 + (1|id), b4 ~ 1 + (1|id), nl = TRUE), data = bpe_data, family = gaussian(), prior = c(
-  prior(normal(0, 1), nlpar = "b0"),
-  prior(normal(0, 1), nlpar = "b1"),
-  prior(normal(0, 1), nlpar = "b2"),
-  prior(normal(0, 1), nlpar = "b3"),
-  prior(normal(0, 1), nlpar = "b4")),
+bpe.supp <- brm(negaff ~ 1 + day + slphrs + erq_supp_c + slphrs:erq_supp_c + (1 + slphrs + erq_supp_c|id), data = bpe_data, family = gaussian(),
   iter = 2000, chains = 4, cores = 4)
 summary(bpe.supp)
 bayes_R2(bpe.supp)
@@ -102,3 +122,10 @@ TODO: make a visualization of this model that shows the prototypical individual 
 TODO: compare the two models (reap vs. supp - which one seems more predictive of better control of negaff?)
 
 TODO: write up a final analysis/conclusion for this tutorial
+
+# Conclusion
+[TODO]
+
+# References
+
+Gross, J. J., & John, O. P. (2003). Individual differences in two emotion regulation processes: Implications for affect, relationships, and well-being. *Journal of Personality and Social Psychology*, *85*(2), 348–362. https://doi.org/10.1037/0022-3514.85.2.348
