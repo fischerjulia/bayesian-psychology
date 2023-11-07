@@ -28,3 +28,5 @@ knitr::opts_chunk$set(echo = TRUE)
 At some point in your education, you've probably learned about statistics, whether that be from a class, a book, or a YouTube video. When students learn about statistics in school, they typically learn what is called *frequentist statistics*. Frequentist statistics covers topics such as null hypothesis significance testing, *p*-values, and confidence intervals. You may be surprised to learn that this standard set of statistical methods is really more of a framework &mdash; a framework that is increasingly being called into question.
 
 A link that provides some good explanations for future use: https://www.austincc.edu/mparker/stat/nov04/talk_nov04.pdf
+
+TODO: provide sufficient mathematical detail/scaffolding to set people up to really *understand* Bayesian methods
