@@ -32,8 +32,7 @@ In our analysis, we will be looking at the relationships among these emotion reg
 
 While we may not be able to precisely pin down the causal structure of the interactions between emotion regulation, sleep, and negative affect, we can run a regression analysis to get some preliminary insights. Our data come from the AMIB study, a multiple time-scale study of college students (Ram et al., 2012). In particular, we will be looking at students' daily self-reports of their sleep and negative affect over the course of eight days, as well as their dispositional reappraisal and suppression scores. The data can be downloaded from https://thechangelab.stanford.edu/collaborations/the-amib-data/.
 
-TODO: add section headers throughout (using # and ##, etc.) so that they show up under robobook ToC
-TODO: add commentary throughout to guide reader through the steps of the tutorial
+TODO: add more commentary throughout to guide reader through the steps of the tutorial
 TODO: use this link for some example plots/analysis of Bayesian MLMs: https://www.rensvandeschoot.com/tutorials/brms-started/
 
 # Preliminaries
@@ -86,6 +85,8 @@ bpe_data$erq_supp_c <- scale(bpe_data$erq_supp, center=TRUE,scale=FALSE)[,1]
 
 Before running our models, it can be helpful to examine the raw data.
 
+## Correlations and distributions
+
 ```{r plot correlations}
 # calculate correlations
 cor(bpe_data[ ,c(-1, -5, -6)], use = "complete.obs") # dropping the id and non-centered erq columns
@@ -95,10 +96,21 @@ pairs.panels(bpe_data[ ,c(-1, -5, -6)])
 
 We see relatively weak correlations overall, but note a weak negative correlation between hours of sleep and level of negative affect (-0.16), as well as a weak negative correlation between cognitive reappraisal and expressive suppression (-0.13). We also observe a weak negative correlation between day in study and level of negative affect (-0.14).
 
-```{r plot data}
-#TODO: plot the raw data to get a sense for any trends in the data
-      # person-by-person & prototypical plot of negaff vs. sleep, w/ points color coded by higher reap (pink) vs. higher supp (blue)
+## Linear regression: negative affect vs. sleep hours
+
+```{r negaff vs. slphrs, warning=FALSE, message=FALSE}
+ggplot(data=bpe_data, aes(x=slphrs, y=negaff)) +
+  geom_point() +
+  geom_smooth(method=lm, lty=1, size=2) +
+  xlab("Hours of Sleep") + ylab("Negative Affect Level") +
+  theme_classic() +
+  theme(axis.title=element_text(size=16),
+        axis.text=element_text(size=12),
+        plot.title=element_text(size=16, hjust=.5)) +
+  ggtitle("Negative Affect and Sleep")
 ```
+
+We see that in general, more sleep is associated with lower negative affect. However, there is a wide spread of negative affect values for many sleep durations.
 
 # Cognitive reappraisal model
 
