@@ -116,7 +116,7 @@ ggplot(data=bpe_data, aes(x=slphrs, y=negaff)) +
 
 We see that in general, more sleep is associated with lower negative affect. However, there is a wide spread of negative affect values for many sleep durations.
 
-TODO: add a section going over the basics of Bayesian parameter estimation and how it differs from frequentist parameter estimation
+TODO: add a section going over the basics of Bayesian parameter estimation and how it differs from frequentist parameter estimation; make sure to go into enough mathematical detail
 
 # Cognitive reappraisal model
 
