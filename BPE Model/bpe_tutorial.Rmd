@@ -1,16 +1,14 @@
 ---
 title: "Modeling with uncertainty: A Bayesian parameter estimation tutorial"
-author: "Julia Fischer"
-date: "Fall 2023"
 output:
-  rmdformats::robobook:
-    highlight: tango
+  pdf_document: default
   html_document:
     toc: true
     toc_depth: 4
     code_download: true
   word_document: default
-  pdf_document: default
+  rmdformats::robobook:
+    highlight: tango
 editor_options:
   chunk_output_type: inline
 ---
@@ -43,6 +41,7 @@ TODO: use this link for some example plots/analysis of Bayesian MLMs: https://ww
 knitr::opts_chunk$set(echo = TRUE)
 library(brms)
 library(psych)
+library(tinytex)
 library(tidyverse)
 ```
 
@@ -123,7 +122,8 @@ TODO: add a section going over the basics of Bayesian parameter estimation and h
 TODO: add model equation in Latex
 
 ```{r bpe model reap}
-bpe.reap <- brm(negaff ~ 1 + day + slphrs + erq_reap_c + slphrs:erq_reap_c + (1 + slphrs + erq_reap_c|id), data = bpe_data, family = gaussian(),
+bpe.reap <- brm(negaff ~ 1 + day + slphrs + erq_reap_c + slphrs:erq_reap_c
+                  + (1 + slphrs + erq_reap_c|id), data = bpe_data, family = gaussian(),
   iter = 2000, chains = 4, cores = 4)
 summary(bpe.reap)
 bayes_R2(bpe.reap)
@@ -138,7 +138,8 @@ TODO: make a visualization of this model that shows the prototypical individual 
 TODO: add model equation in Latex
 
 ```{r bpe model supp}
-bpe.supp <- brm(negaff ~ 1 + day + slphrs + erq_supp_c + slphrs:erq_supp_c + (1 + slphrs + erq_supp_c|id), data = bpe_data, family = gaussian(),
+bpe.supp <- brm(negaff ~ 1 + day + slphrs + erq_supp_c + slphrs:erq_supp_c
+                + (1 + slphrs + erq_supp_c|id), data = bpe_data, family = gaussian(),
   iter = 2000, chains = 4, cores = 4)
 summary(bpe.supp)
 bayes_R2(bpe.supp)
@@ -148,7 +149,7 @@ plot(bpe.supp)
 TODO: interpret model results (including Bayesian significance testing)
 TODO: make a visualization of this model that shows the prototypical individual and all individuals
 
-TODO: compare the two models (reap vs. supp - which one seems more predictive of better control of negaff?)
+TODO: compare the fits of the two models (reap vs. supp) using **Bayes factor**
 
 TODO: write up a final analysis/conclusion for this tutorial
 
