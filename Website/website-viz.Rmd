@@ -10,7 +10,6 @@ Aiming for a complex, emotion-evoking display of Bayesianism (prior, likelihood,
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 library(tidyverse)
 ```
 
