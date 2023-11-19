@@ -1,0 +1,78 @@
+---
+title: "The probabilistic mind: A Bayesian cognitive modeling tutorial"
+output:
+  pdf_document: default
+  html_document:
+    toc: true
+    toc_depth: 4
+    code_download: true
+  word_document: default
+  rmdformats::robobook:
+    highlight: tango
+editor_options:
+  chunk_output_type: inline
+---
+
+# Introduction
+
+## Technical objective
+Learn the basics of Bayesian cognitive modeling, a method for simulating the mind's psychological processes as functions of a Bayesian inference machine
+
+## Substantive research question
+How do feelings of stress and dominance emerge probabilistically in response to conversations with partners of the same and different gender?
+
+## Emotional reactivity to social interactions
+In this tutorial... [TODO]
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tinytex)
+```
+
+```{r person-level data}
+# set filepath for data file
+filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_persons_2019_0501.csv"
+# read in the .csv file using the url() function
+AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
+```
+
+```{r day-level data}
+# set filepath for data file
+filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_daily_2019_0501.csv"
+# read in the .csv file using the url() function
+AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
+```
+
+```{r interaction-level data}
+# set filepath for data file
+filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_interaction_2019_0501.csv"
+# read in the .csv file using the url() function
+AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
+```
+
+Note: This code doesn't run because WebPPL has not been set up (yet).  
+
+Contributions of personal stress level and partner's gender to dominance in a social interaction:  
+
+TODO: change the partnerGender variable to be [0 = same gender interlocutor vs. 1 = opposite/different gender interlocutor]
+TODO: try to write this model in greta (a PPL hosted in R that runs atop TensorFlow inference algos: https://cran.r-project.org/web/packages/greta/vignettes/get_started.html)
+```{js gender stress dominance}
+var getIgdom = function(partnerGender, stress) { // igdom = interaction-level dominance
+  if (partnerGender == 1) { // partner is female
+    return stress == 1 ? 7 : 5
+  } // partner is male
+  return stress == 1 ? 6 : 4
+}
+
+var model = function () {
+    var partnerGender = flip() // equal chance of having male vs. female partner
+    var stress = flip(0.3) // 30% chance of being stressed
+    var igdom = getIgdom(partnerGender, stress)
+    condition(igdom >= 5)
+    return partnerGender
+}
+var dist = Infer({method: 'rejection', samples: 1000}, model)
+viz(dist)
+```
+
+# TODO: dig into the data and try to make a model that matches the data
