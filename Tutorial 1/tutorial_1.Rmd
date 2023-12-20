@@ -1,19 +1,21 @@
 ---
-title: "Tutorial 1: Bayesian statistics for the social scientist"
-author: "Julia Fischer"
-date: '2023-09-07'
+title: "Bayesian statistics for the social scientist"
 output:
-  rmdformats::robobook:
-    highlight: tango
   html_document:
     toc: true
+    toc_float: true
     toc_depth: 4
     code_download: true
-  word_document: default
+    number_sections: true
+    theme: flatly
+    highlight: tango
   pdf_document: default
+  word_document: default
 editor_options:
   chunk_output_type: inline
 ---
+
+<font size="4">
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -30,3 +32,5 @@ At some point in your education, you've probably learned about statistics, wheth
 A link that provides some good explanations for future use: https://www.austincc.edu/mparker/stat/nov04/talk_nov04.pdf
 
 TODO: provide sufficient mathematical detail/scaffolding to set people up to really *understand* Bayesian methods
+
+</font>

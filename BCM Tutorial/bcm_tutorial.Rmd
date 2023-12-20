@@ -1,17 +1,21 @@
 ---
 title: "The probabilistic mind: A Bayesian cognitive modeling tutorial"
 output:
-  pdf_document: default
   html_document:
     toc: true
+    toc_float: true
     toc_depth: 4
     code_download: true
-  word_document: default
-  rmdformats::robobook:
+    number_sections: true
+    theme: flatly
     highlight: tango
+  pdf_document: default
+  word_document: default
 editor_options:
   chunk_output_type: inline
 ---
+
+<font size="4">
 
 # Introduction
 
@@ -76,3 +80,5 @@ viz(dist)
 ```
 
 # TODO: dig into the data and try to make a model that matches the data
+
+</font>

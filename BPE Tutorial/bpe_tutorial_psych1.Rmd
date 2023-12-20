@@ -1,0 +1,259 @@
+---
+title: "Modeling with uncertainty: A Bayesian parameter estimation tutorial"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    code_download: true
+    number_sections: true
+    theme: flatly
+    highlight: tango
+  pdf_document: default
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+<font size="4">
+
+**After reading through this tutorial, you may keep this tab open and refer back to the tutorial as you complete the rest of the survey.**
+
+# Introduction
+
+## Technical objective
+Learn the basics of Bayesian parameter estimation, a Bayesian data analysis technique, and how it differs from frequentist parameter estimation
+
+## Substantive research question
+How does cognitive reappraisal moderate the association between sleep and negative emotions?
+
+## Bayesian parameter estimation
+In this tutorial, we will be applying the Bayesian lens to the estimation of parameters in a multilevel linear model. In **Bayesian parameter estimation**, we view parameter estimates as probability distributions, as opposed to point values.  
+
+## Emotion regulation
+In the following Bayesian data analysis models, we will examine an emotion regulation strategy, **cognitive reappraisal**, and whether it moderates the association between **hours of sleep** at night and **negative affect** the following day.
+
+Briefly, in **cognitive reappraisal**, one changes the way in which they think about an emotionally-inducing event in order to alter their emotional response to that event. For example, instead of thinking about an exam as a difficult and consequential test of their abilities, a student might choose to frame the exam as an opportunity to show what they have learned. More information on emotion regulation strategies can be found in Gross & John (2003).
+
+## The present study: Cognitive reappraisal, sleep, and negative affect
+
+In our analysis, we will be looking at the relationships among cognitive reappraisal, sleep, and negative affect, also known as negative emotion. An individual's emotion regulation and coping strategies are thought to moderate the impact of stress on sleep quality (Kahn et al., 2013). We might also be interested in whether emotion regulation strategies moderate the impact of sleep on negative emotions the following day. In other words, **does cognitive reappraisal, an emotion regulation strategy, help us manage our negative emotions after a night of poor sleep?** 
+
+The data we are using come from the AMIB study, a multiple timescale study of college students (Ram et al., 2012). In particular, we will be looking at college students' daily self-reports of their sleep and negative affect over the course of eight days, as well as their dispositional cognitive reappraisal scores. The data can be downloaded from https://thechangelab.stanford.edu/collaborations/the-amib-data/. We will run a regression analysis using these data to get some preliminary insights into the associations among cognitive reappraisal, sleep, and negative affect.
+
+# Preliminaries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+set.seed(1)
+```
+
+## Load libraries and data
+
+```{r libraries}
+library(brms)
+library(loo)
+library(psych)
+library(tinytex)
+library(tidyverse)
+```
+
+We read in the data from the online repository.
+
+```{r person-level data}
+# set filepath for data file
+filepath <-
+  "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_persons.csv"
+# read in the .csv file using the url() function
+AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
+```
+
+```{r day-level data}
+# set filepath for data file
+filepath <-
+  "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_daily.csv"
+# read in the .csv file using the url() function
+AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
+```
+
+## Data manipulation
+
+We merge the daily-level variables (**participant ID**, **day**, **hours of sleep**, and **negative affect**) and the person-level variables (**participant ID** and **cognitive reappraisal** score) into a single dataset.
+
+```{r format data}
+# subset to day-level variables of interest
+bpe_daily <- AMIB_daily[,c("id", "day", "slphrs", "negaff")]
+# subset to person-level variables of interest
+bpe_persons <- AMIB_persons[,c("id", "erq_reap")]
+# merge day- and person-level data
+bpe_data <- merge(bpe_daily, bpe_persons, by = "id")
+```
+
+We center the cognitive reappraisal scores to facilitate the interpretation of model results.
+
+```{r center predictor}
+# center the erq cognitive reappraisal subscores for interpretability
+bpe_data$erq_reap_c <- scale(bpe_data$erq_reap, center=TRUE,scale=FALSE)[,1]
+```
+
+# Initial plots
+
+Before running our models, it can be helpful to examine the raw data.
+
+## Correlations and distributions
+
+```{r plot correlations}
+# calculate correlations
+  # dropping the id and non-centered erq columns
+cor(bpe_data[ ,c(-1, -5)], use = "complete.obs")
+# plot correlations
+pairs.panels(bpe_data[ ,c(-1, -5)])
+```
+
+We see relatively weak correlations overall, but note a small negative correlation between **hours of sleep** and **negative affect** (-0.16). We also observe a small negative correlation between **day** in study and **negative affect** (-0.14).
+
+The distributions of the variables can be seen on the diagonal. Of particular interest, we note that the distribution of **cognitive reappraisal** scores has a negative skew, suggesting that participants generally receive high scores on this measure.
+
+## Linear regression: Negative affect vs. hours of sleep
+
+We will now plot a simple, non-Bayesian linear regression of **negative affect** vs. **hours of sleep** to get a better sense of the association between our outcome variable and our main predictor variable.
+
+```{r negaff vs. slphrs}
+ggplot(data=bpe_data, aes(x=slphrs, y=negaff)) +
+  geom_jitter(width = 0.35) +
+  geom_smooth(method=lm, lty=1, size=2) +
+  xlab("Hours of Sleep") + ylab("Negative Affect Level") +
+  theme_classic()  +
+  theme(axis.title=element_text(size=12),
+        axis.text=element_text(size=12),
+        plot.title=element_text(size=14, hjust=.5)) +
+  theme(text = element_text(family = "Times New Roman")) +
+  ggtitle("Negative Affect vs. Sleep")
+```
+
+In general, more **hours of sleep** is associated with lower **negative affect**. However, many of the sleep durations correspond to a wide range of **negative affect** values, suggesting differences in **negative affect** across individuals.
+
+# The Bayesian approach
+
+## Bayes' theorem
+
+Before running our Bayesian model, we will briefly recap Bayes' theorem. Bayes' theorem gives us a mathematical expression for the probability of a hypothesis, H, conditional on (that is, given existing knowledge of) a body of evidence, E (Joyce, 2003/2021). The expression for Bayes’ theorem is
+
+$$ P(H|E)= \frac{P(E|H)P(H)}{P(E)}. $$
+The posterior, $P(H|E)$, refers to the probability of the hypothesis being true after having observed the evidence. The likelihood, $P(E|H)$, refers to the probability of observing the evidence in the case where the hypothesis is already true. The prior, $P(H)$, refers to the probability of the hypothesis being true without having observed any evidence. Finally, the normalizing constant, $P(E)$, refers to the probability of the evidence occurring independent of any hypothesis.
+
+## Bayesian interpretation
+
+In general, Bayes’ theorem operates under the assumption that our refined degree of belief in H can be expressed in terms of (i) our prior, or existing, degree of belief in H and (ii) the contribution of newly observed evidence.
+
+Of interest to parameter estimation, Bayes' theorem allows us to calculate the probability distribution of a particular variable. In Bayesian parameter estimation, we use Bayes' theorem to estimate the posterior distribution of a parameter value conditioned on our data, that is, $P(\theta|D)$. Compared to frequentist parameter estimation, which calculates point estimates for parameter values, **Bayesian parameter estimation gives us a new way to quantify how uncertain we are about our parameter estimates through the use of probability distributions.**
+
+# Cognitive reappraisal model
+
+We will now estimate a model using the **cognitive reappraisal** score as a potential moderator for the relationship between the **hours of sleep** one reports on a particular night and their reported **negative affect** level the following day.
+
+Note that we are using the **brms** package (Bürkner, 2017) to fit this Bayesian model. This package allows the user to specify prior distributions for parameters. However, with a relatively simple linear model such as this one, we can instead allow brms to automatically select uninformative priors for the model's parameters.
+
+## Model equation
+
+$$ negaff_{it} = \beta_0 + \beta_1 day_{t} + \beta_2 sleephours_{it} + \beta_3 reappraisal_i + \beta_4 sleephours_{it} \times reappraisal_i + u_{it}$$
+
+## Run model
+
+```{r bpe model reap, results='hide'}
+bpe.reap <- brm(negaff ~ 1 + day + slphrs + erq_reap_c + slphrs:erq_reap_c
+                + (1 + slphrs + erq_reap_c|id),
+                data = bpe_data, family = gaussian(),
+                iter = 2000, chains = 4, cores = 4)
+```
+
+```{r bpe model reap sum}
+summary(bpe.reap)
+bayes_R2(bpe.reap)
+```
+
+## Interpret results
+
+### Check model convergence
+
+We see that all R-hat values are $\leq$ 1.01, which indicates good convergence.
+
+### Assess 95% credible intervals
+
+Since a Bayesian model does not give us *p*-values like a traditional frequentist model would, we can instead use something called a **95% credible interval** to examine statistical significance. We receive two values for each estimated parameter: the interval's lower bound (l-95% CI) and the interval's upper bound (u-95% CI). Given the data, the probability that the true parameter lies between these values is 0.95.
+
+One way to evaluate a 95% credible interval is to see whether the interval contains 0. If 0 falls within the 95% credible interval, this suggests that the parameter may not be significant. If 0 does not fall within the 95% credible interval, we can be reasonably sure that the parameter is significant.
+
+For this model, the credible intervals of  **day** and **hours of sleep** do not contain 0, suggesting significant associations between these variables and **negative affect**. However, the credible intervals of **cognitive reappraisal** and the interaction between **hours of sleep** and **cognitive reappraisal**, the predictors we are most interested in, do contain 0. Thus, we might doubt the significance of these parameters.
+
+### View posterior distributions of parameters
+
+```{r bpe model reap post}
+plot(bpe.reap)
+```
+
+We can generate plots to visualize the posterior distributions for our estimated parameters. Most parameters appear relatively normally distributed, with a few positively- and negatively-skewed exceptions.
+
+## Visualize model
+
+We plot the model's predictions for **negative affect** vs. **hours of sleep** for "high" ($\geq$ 0) and "low" ($<$ 0) centered **cognitive reappraisal** scores.
+
+```{r bpe model reap plot}
+# save model predictions to dataset
+bpe_data$pred_reap <- predict(bpe.reap, newdata=bpe_data, allow_new_levels=TRUE)
+# discretize reappraisal variable for plotting purposes
+bpe_data$erq_reap_hl <- ifelse(bpe_data$erq_reap_c >= 0, "High", "Low")
+
+ggplot(data = bpe_data, aes(x = slphrs, y = pred_reap[,"Estimate"],
+                                     color = erq_reap_hl)) +
+  geom_jitter(size = .75, width = 0.35) +
+  geom_smooth(method = lm) +
+  xlab("Hours of Sleep") +
+  ylab("Negative Affect") +
+  theme_classic()  +
+  theme(axis.title=element_text(size=12),
+        axis.text=element_text(size=12),
+        plot.title=element_text(size=14, hjust=.5)) +
+  theme(text = element_text(family = "Times New Roman")) +
+  ggtitle("Negative Affect vs. Sleep\nfor High and Low Reappraisal Individuals") +
+  labs(colour = "Cognitive Reappraisal Score")
+```
+
+### Read plot
+
+In this visualization, each point plots an individual's reported **negative affect** on a particular day against the number of **hours of sleep** they report from the prior night. Points are color coded to indicate whether the individual has a high (coral) or low (turquoise) **cognitive reappraisal** score.
+
+The coral regression line represents the aggregate of individuals with high **cognitive reappraisal** scores, while the turquoise regression line represents the aggregate of individuals with low **cognitive reappraisal** scores. The slope of each line indicates the strength of the association between **hours of sleep** at night and **negative affect** the following day for that group. We note that the coral line has a more negative slope than the turquoise line, indicating a stronger association between **hours of sleep** and **negative affect** for the high **cognitive reappraisal** group.
+
+### Interpret plot
+
+We observe that having a higher **cognitive reappraisal** score may predict a larger difference in **negative affect** for a fixed difference in **hours of sleep**. In other words, it appears that those with higher **cognitive reappraisal** scores report **negative affect** that is more closely related to how many **hours of sleep** they got the previous night. This may suggest that **cognitive reappraisal** is most effective in decreasing **negative affect** when an individual has gotten sufficient **hours of sleep**.
+
+# Conclusion
+
+Shifting from a frequentist understanding of parameter estimation to a Bayesian understanding can be challenging, and it is important to consider the merits and drawbacks of both approaches. Bayesian parameter estimation can seem unintuitive at first, but it provides us with new tools to describe and analyze the uncertainty inherent in our data. **In social science research, being able to incorporate subjectivity into our models can give us a new outlook on phenomena that are often hard to pin down in a standard quantitative framework.**
+
+## Additional resources
+
+If you would like to learn more about the concepts mentioned in this tutorial, here are a few external resources:
+
+* The mathematics behind Bayesian parameter estimation: https://ccrma.stanford.edu/~jos/bayes/Bayesian_Parameter_Estimation.html
+* Advanced topics on Bayesian parameter estimation: http://www.ece.virginia.edu/~ffh8x/docs/teaching/esl/2020-04/farnoud-slgm-chap03.pdf
+* The brms package: https://paul-buerkner.github.io/brms/
+* Confidence and credible intervals: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6630113/
+
+# References
+
+Bürkner, P.-C. (2017). brms: An R package for Bayesian multilevel models using Stan. *Journal of Statistical Software*, *80*(1). https://doi.org/10.18637/jss.v080.i01
+
+Gross, J. J., & John, O. P. (2003). Individual differences in two emotion regulation processes: Implications for affect, relationships, and well-being. *Journal of Personality and Social Psychology*, *85*(2), 348–362. https://doi.org/10.1037/0022-3514.85.2.348
+
+Joyce, J. (2021). Bayes’ theorem (E. N. Zalta, Ed.). *The Stanford Encyclopedia of Philosophy* (Fall 2021 Edition). https://plato.stanford.edu/archives/fall2021/entries/bayes-theorem/ (Original work published 2003)
+
+Kahn, M., Sheppes, G., & Sadeh, A. (2013). Sleep and emotions: Bidirectional links and underlying mechanisms. *International Journal of Psychophysiology*, *89*(2), 218–228. https://doi.org/10.1016/j.ijpsycho.2013.05.010
+
+Ram, N., Conroy, D. E., Pincus, A. L., Hyde, A. L., & Molloy, L. E. (2012). Tethering theory to method: Using measures of intraindividual variability to operationalize individuals’ dynamic characteristics. In G. Hancock & J. Harring (Eds.), *Advances in longitudinal methods in the social and behavioral sciences* (pp. 81-110). New York: Information Age.
+
+**You may now switch back to the Qualtrics survey tab. You can leave this tab open and refer back to the tutorial as you complete the rest of the survey.**
+
+</font>
