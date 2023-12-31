@@ -30,26 +30,36 @@ In this tutorial... [TODO]
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tinytex)
+# load greta package for writing and sampling statistical models
+library(greta)
+# load packagesfor plotting greta models
+library(igraph)
+library(DiagrammeR)
+
+# install necessary TensorFlow and TensorFlow Probability Python packages
+install_greta_deps()
 ```
 
 ```{r person-level data}
 # set filepath for data file
-filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_persons_2019_0501.csv"
+filepath <-
+  "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_persons.csv"
 # read in the .csv file using the url() function
 AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
 ```
 
 ```{r day-level data}
 # set filepath for data file
-filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_daily_2019_0501.csv"
+filepath <-
+  "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_daily.csv"
 # read in the .csv file using the url() function
 AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
 ```
 
 ```{r interaction-level data}
 # set filepath for data file
-filepath <- "https://raw.githubusercontent.com/LRI-2/Data/main/ILD/AMIBshare_interaction_2019_0501.csv"
+filepath <-
+  "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_interaction.csv"
 # read in the .csv file using the url() function
 AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
 ```
@@ -60,6 +70,7 @@ Contributions of personal stress level and partner's gender to dominance in a so
 
 TODO: change the partnerGender variable to be [0 = same gender interlocutor vs. 1 = opposite/different gender interlocutor]
 TODO: try to write this model in greta (a PPL hosted in R that runs atop TensorFlow inference algos: https://cran.r-project.org/web/packages/greta/vignettes/get_started.html)
+TODO: after you get this model up and running in greta, try out a new model with different variables (perhaps some that are more interesting/are supported by prior work - or find prior work supporting the stress/dominance/gender associations)
 ```{js gender stress dominance}
 var getIgdom = function(partnerGender, stress) { // igdom = interaction-level dominance
   if (partnerGender == 1) { // partner is female
@@ -78,7 +89,8 @@ var model = function () {
 var dist = Infer({method: 'rejection', samples: 1000}, model)
 viz(dist)
 ```
-
-# TODO: dig into the data and try to make a model that matches the data
+# TODO: plot the model
+# TODO: evaluate the model against the data
+# TODO: dig into the data and try to make a model that matches the data (this is an old comment - not really sure what I meant by this)
 
 </font>
