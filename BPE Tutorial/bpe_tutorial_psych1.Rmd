@@ -52,9 +52,7 @@ set.seed(1)
 
 ```{r libraries}
 library(brms)
-library(loo)
 library(psych)
-library(tinytex)
 library(tidyverse)
 ```
 

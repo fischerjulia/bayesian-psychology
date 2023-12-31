@@ -54,7 +54,6 @@ set.seed(1)
 library(brms)
 library(loo)
 library(psych)
-library(tinytex)
 library(tidyverse)
 ```
 
