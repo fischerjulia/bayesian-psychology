@@ -1,5 +1,6 @@
 ---
 title: "The probabilistic mind: A Bayesian cognitive modeling tutorial"
+author: "Julia Fischer"
 output:
   html_document:
     toc: true
@@ -23,22 +24,35 @@ editor_options:
 Learn the basics of Bayesian cognitive modeling, a method for simulating the mind's psychological processes as functions of a Bayesian inference machine
 
 ## Substantive research question
-How do feelings of stress and dominance emerge probabilistically in response to conversations with partners of the same and different gender?
+How does behavioral dominance emerge in relation to stress and conversations with partners of the same and different genders?
+
+## Bayesian cognitive modeling
+Bayesian cognitive modeling describes a class of computational models that aim to simulate human cognition by representing one’s understanding of the world as probabilistic (or Bayesian) inference using abstract world knowledge and evidence (Tenenbaum et al., 2011). In such models, we first specify a prior distribution over possible states of the world (Lee & Wagenmakers, 2013). We then consider observed evidence, which is often noisy, and use this to update our posterior distribution over possible states of the world. As more observations are made, the model can be sequentially updated to reflect this new knowledge in the posterior distribution.
+
 
 ## Emotional reactivity to social interactions
-In this tutorial... [TODO]
+Emotional appraisals and social interactions are intimately intertwined. Making a judgment about what is personally relevant, and thus emotionally significant, can be significantly impacted by our interactions with others (Parkinson, 1996). Further, the emotions of others and our affective appraisals factor into how we behave in social situations (van Kleef & Côté, 2022). We are interested in building a model of how multiple elements of a social interaction, including emotional self-appraisals, interact to generate one's behavior in that social interaction.  
+
+## The present study: Gender, stress, and dominance in social interactions
+Our Bayesian cognitive model (or, perhaps more aptly, our Bayesian *affective* model), will focus on how one appraises (1) their current stress level and (2) the social dynamics in relation to the gender of their conversational partner, and how these two judgments contribute to their perception of dominance in the interaction. While we do have a variable measuring the participants' reported stress at the time of each interaction, we do not have a variable that explicitly measures how they judge the impact of their interaction partner's gender on their dominance in the interaction. However, since we do know whether or not their interaction partner is of the same or different gender, we can use our model to build a theory of how gender dynamics relate to one's feelings and behavior in an interaction.  
+
+The data we are using come from the AMIB study, a multiple timescale study of college students (Ram et al., 2012). In particular, we will be looking at college students' self-reports of interactions they have with others in their daily lives. After each interaction, the participants reported on basic facts about the interaction, such as where and when it took place, as well as their behavior and feelings during the interaction. The data can be downloaded from https://thechangelab.stanford.edu/collaborations/the-amib-data/.  
+
+# Preliminaries
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-# load greta package for writing and sampling statistical models
-library(greta)
-# load packagesfor plotting greta models
-library(igraph)
-library(DiagrammeR)
-
-# install necessary TensorFlow and TensorFlow Probability Python packages
-install_greta_deps()
 ```
+
+## Load libraries and data
+
+```{r libraries, warning=FALSE, message=FALSE}
+library(brms)
+library(psych)
+library(tidyverse)
+```
+
+We read in the data from the online repository.
 
 ```{r person-level data}
 # set filepath for data file
@@ -46,14 +60,6 @@ filepath <-
   "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_persons.csv"
 # read in the .csv file using the url() function
 AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
-```
-
-```{r day-level data}
-# set filepath for data file
-filepath <-
-  "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_daily.csv"
-# read in the .csv file using the url() function
-AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
 ```
 
 ```{r interaction-level data}
@@ -64,33 +70,202 @@ filepath <-
 AMIB_interaction <- read.csv(file=url(filepath),header=TRUE)
 ```
 
-Note: This code doesn't run because WebPPL has not been set up (yet).  
+## Data manipulation
 
-Contributions of personal stress level and partner's gender to dominance in a social interaction:  
+We merge the interaction-level variables of interest (**participant ID**, **day**, **interaction**, **partner gender**, **dominance**, **stress**) and the person-level variables of interest (**participant ID**, **gender**) into a single dataset.
 
-TODO: change the partnerGender variable to be [0 = same gender interlocutor vs. 1 = opposite/different gender interlocutor]
-TODO: try to write this model in greta (a PPL hosted in R that runs atop TensorFlow inference algos: https://cran.r-project.org/web/packages/greta/vignettes/get_started.html)
-TODO: after you get this model up and running in greta, try out a new model with different variables (perhaps some that are more interesting/are supported by prior work - or find prior work supporting the stress/dominance/gender associations)
-```{js gender stress dominance}
-var getIgdom = function(partnerGender, stress) { // igdom = interaction-level dominance
-  if (partnerGender == 1) { // partner is female
-    return stress == 1 ? 7 : 5
-  } // partner is male
-  return stress == 1 ? 6 : 4
-}
-
-var model = function () {
-    var partnerGender = flip() // equal chance of having male vs. female partner
-    var stress = flip(0.3) // 30% chance of being stressed
-    var igdom = getIgdom(partnerGender, stress)
-    condition(igdom >= 5)
-    return partnerGender
-}
-var dist = Infer({method: 'rejection', samples: 1000}, model)
-viz(dist)
+```{r merge data}
+# subset to interaction-level variables of interest
+bcm_interaction <- AMIB_interaction[,c("id", "day", "interaction", "partner_gender", "igdom", "stress")]
+# subset to person-level variables of interest
+bcm_persons <- AMIB_persons[,c("id", "sex")]
+# merge day- and person-level data
+bcm_data <- merge(bcm_interaction, bcm_persons, by = "id")
 ```
-# TODO: plot the model
-# TODO: evaluate the model against the data
-# TODO: dig into the data and try to make a model that matches the data (this is an old comment - not really sure what I meant by this)
+
+We note the limitation that our data only record the participant's binary-coded sex, and not their gender. For this demonstration, we use sex as a proxy for gender, but encourage more expansive views of gender and sex in future data collection efforts.  
+
+Since we are interested in interactions with **same** vs. **different gender** partners, we create an interaction-level variable for this.
+
+```{r same or diff partner gender}
+# recode sex variable to be on same scale as partner_gender variable (male = 0, female = 1)
+bcm_data$sex <- bcm_data$sex - 1
+# create new variable
+bcm_data$same_gender_partner <- ifelse(bcm_data$partner_gender == bcm_data$sex, 1, 0)
+```
+
+## Set a seed for modeling
+
+```{r set seed}
+set.seed(8)
+```
+
+# Initial plots
+
+```{r correlations}
+# calculate correlations
+  # dropping the id column
+cor(bcm_data[ ,c(-1)], use = "complete.obs")
+# plot correlations
+pairs.panels(bcm_data[ ,c(-1)])
+```
+
+We note that the majority of interactions are with a same-gender partner and that the majority of participants and interaction partners are female. We also note large correlations among variables that we would expect to be correlated based on the way they were derived (e.g., **partner gender** and **same-gender partner**).
+
+# Cognitive model #1: Dominance, stress, and partner gender
+
+We will now fit our first Bayesian cognitive model, making use of the brms (Bayesian regression models using 'Stan') package for probabilistic modeling (Bürkner, 2017). Our model assumes that in a social interaction, an individual appraises their stress level, makes assumptions based on whether their interaction partner is of the same or a different gender, and uses this information to determine how dominant to behave in the interaction.  
+
+Like in a standard Bayesian analysis model, we select prior distributions over the parameters we are estimating. If we have reason to believe that certain parameters should have values in a specified range, we can give these parameters informative priors. Informative priors are generally centered at a value of particular interest and deviate only slightly from that value. However, since our current model is relatively theory-agnostic, we will set uninformative priors and allow the data to find appropriate parameter values.  
+
+## Fit model
+
+```{r bcm 1 fit, warning=FALSE, message=FALSE, results='hide'}
+bcm.1 <- brm(igdom ~ 1 + stress + same_gender_partner,
+           data = bcm_data, family = gaussian(),
+           prior = c(prior(normal(0, 10), class = "Intercept"),
+                     prior(normal(0, 10), class = "b", coef = "stress"),
+                     prior(normal(0, 10), class = "b", coef = "same_gender_partner")),
+           iter = 1000, chains = 4, cores = 4)
+```
+
+## Examine results
+
+```{r bcm 1 results}
+summary(bcm.1)
+plot(bcm.1)
+# plot conditional effects for each predictor
+plot(conditional_effects(bcm.1), ask = FALSE)
+```
+
+From the model summary, we note that the 95% credible interval for **stress** does not contain 0, which indicates that it is significantly associated with the outcome variable of **dominance**. Since the coefficient for **stress** is negative, there is evidence that people will behave less dominantly when they appraise the interaction as more stressful. We also note that the 95% credible interval for **same-gender partner** does contain 0, so we might doubt that the gender of one's interaction partner is strongly related to their behavioral dominance in the interaction.  
+
+Looking at the posterior distribution plots, we see that the model seems to have converged, and the chains seem to have mixed. Additionally, the model summary shows low R-hat values (< 1.01) and large bulk and tail effective sample sizes (> 500), providing additional evidence that the model has converged. It is important to assess the convergence of a Bayesian model, as if the model has not converged, we cannot draw sound conclusions from our parameter estimates.  
+
+Finally, the conditional effects plots give us graphical representations of our estimated parameters. We again see that while **stress** seems to be negatively associated with **dominance**, **partner gender** does not seem to be associated with **dominance** at all. We may want to update our theory of how dominance is generated in a social interaction and try out a new model.  
+
+# Cognitive model #2: Adding participant gender as a predictor
+
+Perhaps we have reason to believe that the participant's own gender has some bearing on their emotional appraisals and behaviors in social interactions. We thus include this as an additional predictor in our model. We keep everything else the same, including the priors, and assign the same generic $N(0, 10)$ prior to this new predictor.  
+
+## Fit model
+
+```{r bcm 2 fit, warning=FALSE, message=FALSE, results='hide'}
+bcm.2 <- brm(igdom ~ 1 + stress + same_gender_partner + sex,
+           data = bcm_data, family = gaussian(),
+           prior = c(prior(normal(0, 10), class = "Intercept"),
+                     prior(normal(0, 10), class = "b", coef = "stress"),
+                     prior(normal(0, 10), class = "b", coef = "same_gender_partner"),
+                     prior(normal(0, 10), class = "b", coef = "sex")),
+           iter = 1000, chains = 4, cores = 4)
+```
+
+## Examine results
+
+```{r bcm 2 results}
+summary(bcm.2)
+plot(bcm.2)
+# plot conditional effects for each predictor
+plot(conditional_effects(bcm.2), ask = FALSE)
+```
+
+From the model summary, we note that the 95% credible interval for **stress** again does not contain 0, which indicates that it is significantly (negatively) associated with **dominance**. We also note that the 95% credible interval for **same-gender partner** again does contain 0, suggesting that it is not associated with **dominance**, even with the inclusion of **participant gender** as a predictor. Since the 95% credible interval for **participant gender** does not contain 0, there is evidence that females are more likely to report dominant behavior in a social interaction than males are.   
+
+Looking at the posterior distribution plots, R-hat values, and effective sample sizes, we see that this model also seems to have converged, and the chains seem to have mixed.  
+
+Finally, the conditional effects plots give us graphical representations of our estimated parameters.  
+
+# Model comparison
+
+Since the added **participant gender** predictor is associated with the outcome of **dominance**, we feel pretty confident that the second model is superior to the first. Let's verify this using the widely applicable information criterion (WAIC).
+
+```{r waic}
+waic(bcm.1, bcm.2)
+```
+
+The WAIC suggests that the second model fits better. This makes sense, given that it includes the new, potentially explanatory predictor variable of **participant gender**.  
+
+# Model predictions
+
+Let's use our second cognitive model, the one with **participant gender** as a predictor, to predict the level of dominance a hypothetical individual might report in some hypothetical interactions.  
+
+For example, let's say that there is a male (**sex = 0**) who feels highly stressed (**stress = 5**) and has an interaction with a female (**same_gender_partner = 0**). We will predict a posterior distribution over the dominance he reports in this interaction:
+
+```{r predict high stress}
+predict_data_high_stress <- data.frame(
+  stress = 5,
+  sex = 0,
+  same_gender_partner = 0
+)
+prediction_high_stress <- posterior_predict(object = bcm.2, newdata = predict_data_high_stress)
+prediction_high_stress <- data.frame(prediction_high_stress)
+colnames(prediction_high_stress) <- c("predicted_dominance")
+prediction_high_stress %>% ggplot(aes(x=predicted_dominance)) + geom_density(fill="lightpink")
+```
+
+Now, let's see what posterior distribution over dominance we would expect if this same individual had a low stress level (**stress = 0**) during that same interaction.
+
+```{r predict low stress}
+predict_data_low_stress <- data.frame(
+  stress = 0,
+  sex = 0,
+  same_gender_partner = 0
+)
+prediction_low_stress <- posterior_predict(object = bcm.2, newdata = predict_data_low_stress)
+prediction_low_stress <- data.frame(prediction_low_stress)
+colnames(prediction_low_stress) <- c("predicted_dominance")
+prediction_low_stress %>% ggplot(aes(x=predicted_dominance)) + geom_density(fill="lightblue")
+```
+
+Finally, let's plot both of these posterior predictions together to see how much they overlap.
+
+```{r both predictions together}
+# combine both predictive distributions into one dataframe
+prediction_high_stress$stress <- "high"
+prediction_low_stress$stress <- "low"
+combined_predictions <- rbind(prediction_high_stress, prediction_low_stress)
+combined_predictions %>% ggplot(aes(x=predicted_dominance, fill=stress)) +
+  geom_density(alpha = 0.3)
+```
+
+We see that there is quite a bit of overlap between the high- and low-stress conditions. This helps illustrate an important point in predictive modeling: while there may be a significant difference in the means of two groups, if there is a large overlap between their distributions, you should exercise caution when making predictions and inferences based on your model. In other words, if we have a male participant who reports a dominance level of 5.5, our model is insufficient to identify with certainty which distribution that sample comes from: the high-stress distribution (pink) or the low-stress distribution (blue).
+
+# Bayesian cognitive modeling vs. Bayesian parameter estimation
+
+We'll take a quick aside here to talk more in depth about what Bayesian cognitive modeling really is. If you've completed the tutorial on Bayesian parameter estimation, or if you're familiar with Bayesian data analysis in general, you may be a bit confused as to how Bayesian cognitive modeling is any different. After all, we're fitting a linear model using brms, which is also what we did in the Bayesian parameter estimation tutorial.  
+
+In short, Bayesian cognitive modeling is a form of Bayesian parameter estimation. But instead of just using the Bayesian framework to facilitate the analysis and interpretation of our data, we go a step further and make the assumption that the psychological process we are modeling is Bayesian in nature. Our use of parameter distributions is not just an artifact of the type of analysis being done, but rather has real substantive meaning. In a Bayesian cognitive model, we believe that people's observations, judgments, appraisals, etc. are noisy, and thus distributions help us express the uncertainty inherent in these processes. Our perceptual and cognitive processes are imperfect, and Bayesian cognitive modeling gives us a way to integrate this fact into the structural core of our models.  
+
+# Conclusion
+
+In this tutorial, we created two preliminary Bayesian cognitive models to try to explain how **stress** and **gender** contribute to behavioral **dominance** in social interactions. We found that the more stressful one judges an interaction to be, the less dominant they will likely behave. We also found that dominant behavior in interpersonal interactions seems to be more prevalent among females. There still seem to be some pieces missing from this explanatory puzzle. We might try to improve upon the models here by, for example:
+
+* Including more interaction-level variables related to the participant's assessment of their partner's behavior (e.g., the partner's agency)
+* Integrating individual-level differences in temperament into the model
+* Challenging the assumption that the predictors are linear and additive by using a nonlinear model.
+
+Mental processes can be highly complex, so it may not be immediately clear which variables to use in constructing a cognitive model. Luckily, the Bayesian framework provides us with a robust, interpretable system in which to situate these explorations.  
+
+## Additional resources
+
+If you would like to learn more about the concepts mentioned in this tutorial, here are a few external resources:
+
+* Using a probabilistic programming language (PPL) to construct expressive cognitive models: https://probmods.org/
+* In-depth philosophical and mathematical details of Bayesian models of cognition: https://cocosci.princeton.edu/tom/papers/bayeschapter.pdf
+* A video on Bayesian cognitive modeling in the Julia programming language: https://www.youtube.com/watch?v=NNySqCSmIo4
+
+# References
+
+Bürkner, P.-C. (2017). brms: An R package for Bayesian multilevel models using Stan. *Journal of Statistical Software*, *80*(1). https://doi.org/10.18637/jss.v080.i01
+
+Lee, M. D. & Wagenmakers, E.-J. (2013). *Bayesian cognitive modeling: A practical course.* Cambridge University Press. https://doi.org/10.1017/CBO9781139087759
+
+Parkinson, B. (1996). Emotions are social. *British Journal of Psychology*, *87*, 663-683. https://doi.org/10.1111/j.2044-8295.1996.tb02615.x
+
+Ram, N., Conroy, D. E., Pincus, A. L., Hyde, A. L., & Molloy, L. E. (2012). Tethering theory to method: Using measures of intraindividual variability to operationalize individuals’ dynamic characteristics. In G. Hancock & J. Harring (Eds.), *Advances in longitudinal methods in the social and behavioral sciences* (pp. 81-110). New York: Information Age.
+
+Tenenbaum, J. B., Kemp, C., Griffiths, T. L., & Goodman, N. D. (2011). How to grow a mind: Statistics, structure, and abstraction. *Science*, *331*(6022), 1279–1285. https://doi.org/10.1126/science.1192788
+
+van Kleef, G. A. & Côté, S. (2022). The social effects of emotions. *Annual Review of Psychology*, *73*(1), 629-658.
 
 </font>
