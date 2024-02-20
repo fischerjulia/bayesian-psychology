@@ -1,5 +1,6 @@
 ---
 title: "Modeling with uncertainty: A Bayesian parameter estimation tutorial"
+author: "Julia Fischer"
 output:
   html_document:
     toc: true
@@ -16,8 +17,6 @@ editor_options:
 ---
 
 <font size="4">
-
-**After reading through this tutorial, you may keep this tab open and refer back to the tutorial as you complete the rest of the survey.**
 
 # Introduction
 
@@ -77,7 +76,7 @@ AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
 
 ## Data manipulation
 
-We merge the daily-level variables (**participant ID**, **day**, **hours of sleep**, and **negative affect**) and the person-level variables (**participant ID**, **cognitive reappraisal** score, **expressive suppression** score) into a single dataset.
+We merge the daily-level variables of interest (**participant ID**, **day**, **hours of sleep**, and **negative affect**) and the person-level variables of interest (**participant ID**, **cognitive reappraisal** score, **expressive suppression** score) into a single dataset.
 
 ```{r format data}
 # subset to day-level variables of interest
@@ -152,7 +151,7 @@ Of interest to parameter estimation, Bayes' theorem allows us to calculate the p
 
 We will first estimate a model using the **cognitive reappraisal** score as a potential moderator for the relationship between the **hours of sleep** one reports on a particular night and their reported **negative affect** level the following day.
 
-Note that we are using the **brms** package (Bürkner, 2017) to fit our Bayesian models. This package allows the user to specify prior distributions for parameters. However, with a relatively simple linear model such as this one, we can instead allow brms to automatically select uninformative priors for the model's parameters.
+Note that we are using the *Bayesian regression models using 'Stan'* package, or **brms**, (Bürkner, 2017) to fit our Bayesian models. This package allows the user to specify prior distributions for parameters. However, with a relatively simple linear model such as this one, we can instead allow brms to automatically select uninformative priors for the model's parameters.
 
 ## Model equation
 
@@ -346,7 +345,5 @@ Joyce, J. (2021). Bayes’ theorem (E. N. Zalta, Ed.). *The Stanford Encyclopedi
 Kahn, M., Sheppes, G., & Sadeh, A. (2013). Sleep and emotions: Bidirectional links and underlying mechanisms. *International Journal of Psychophysiology*, *89*(2), 218–228. https://doi.org/10.1016/j.ijpsycho.2013.05.010
 
 Ram, N., Conroy, D. E., Pincus, A. L., Hyde, A. L., & Molloy, L. E. (2012). Tethering theory to method: Using measures of intraindividual variability to operationalize individuals’ dynamic characteristics. In G. Hancock & J. Harring (Eds.), *Advances in longitudinal methods in the social and behavioral sciences* (pp. 81-110). New York: Information Age.
-
-**You may now switch back to the Qualtrics survey tab. You can leave this tab open and refer back to the tutorial as you complete the rest of the survey.**
 
 </font>
