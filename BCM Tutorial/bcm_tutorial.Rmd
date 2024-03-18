@@ -49,6 +49,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r libraries, warning=FALSE, message=FALSE}
 library(brms)
 library(psych)
+library(Rlab)
 library(tidyverse)
 ```
 
@@ -187,6 +188,8 @@ The WAIC suggests that the second model fits better. This makes sense, given tha
 
 # Model predictions
 
+## Fixed predictor values
+
 Let's use our second cognitive model, the one with **participant gender** as a predictor, to predict the level of dominance a hypothetical individual might report in some hypothetical interactions.  
 
 For example, let's say that there is a male (**sex = 0**) who feels highly stressed (**stress = 5**) and has an interaction with a female (**same_gender_partner = 0**). We will predict a posterior distribution over the dominance he reports in this interaction:
@@ -230,6 +233,54 @@ combined_predictions %>% ggplot(aes(x=predicted_dominance, fill=stress)) +
 
 We see that there is quite a bit of overlap between the high- and low-stress conditions. This helps illustrate an important point in predictive modeling: while there may be a significant difference in the means of two groups, if there is a large overlap between their distributions, you should exercise caution when making predictions and inferences based on your model. In other words, if we have a male participant who reports a dominance level of 5.5, our model is insufficient to identify with certainty which distribution that sample comes from: the high-stress distribution (pink) or the low-stress distribution (blue).
 
+## Simulated distributions
+
+Now, let's make some predictions with simulated data. We can model **same-gender partner** and **stress** as random variables, which lets us express a person's expectations over the range of interaction partners and appraised stress levels they expect to encounter at a particular time. We keep **participant gender** fixed at 1 to represent a female participant in this simulation.
+
+
+Perhaps the participant is appraising a generally low level of stress.
+
+```{r sim 1}
+same_gender_partner <- rbern(n = 100, prob = 0.5)
+same_gender_partner
+stress <- rbinom(n = 100, size = 5, prob = 0.1)
+stress
+sim_data_1 <- data.frame(same_gender_partner, stress)
+sim_data_1$sex <- 1
+sim_prediction_1 <- posterior_predict(object = bcm.2, newdata = sim_data_1)
+sim_prediction_1 <- data.frame(sim_prediction_1)
+colnames(sim_prediction_1) <- c("predicted_dominance")
+sim_prediction_1 %>% ggplot(aes(x=predicted_dominance)) + geom_density(fill="lightpink")
+```
+
+Now, perahps the participant is appraising a generally high level of stress.
+
+```{r sim 2}
+same_gender_partner <- rbern(n = 100, prob = 0.5)
+same_gender_partner
+stress <- rbinom(n = 100, size = 5, prob = 0.9)
+stress
+sim_data_2 <- data.frame(same_gender_partner, stress)
+sim_data_2$sex <- 1
+sim_prediction_2 <- posterior_predict(object = bcm.2, newdata = sim_data_2)
+sim_prediction_2 <- data.frame(sim_prediction_2)
+colnames(sim_prediction_2) <- c("predicted_dominance")
+sim_prediction_2 %>% ggplot(aes(x=predicted_dominance)) + geom_density(fill="lightblue")
+```
+
+Let's plot the overlap of our simulations.
+
+```{r both sims together}
+# combine both predictive distributions into one dataframe
+sim_prediction_1$simulation <- "1"
+sim_prediction_2$simulation <- "2"
+combined_simulations <- rbind(sim_prediction_1, sim_prediction_2)
+combined_simulations %>% ggplot(aes(x=predicted_dominance, fill=simulation)) +
+  geom_density(alpha = 0.3)
+```
+
+We again see quite a bit of overlap. If we included more predictive variables, we would likely be able to see more separation between different distributions.
+
 # Bayesian cognitive modeling vs. Bayesian parameter estimation
 
 We'll take a quick aside here to talk more in depth about what Bayesian cognitive modeling really is. If you've completed the tutorial on Bayesian parameter estimation, or if you're familiar with Bayesian data analysis in general, you may be a bit confused as to how Bayesian cognitive modeling is any different. After all, we're fitting a linear model using brms, which is also what we did in the Bayesian parameter estimation tutorial.  
@@ -242,9 +293,13 @@ In this tutorial, we created two preliminary Bayesian cognitive models to try to
 
 * Including more interaction-level variables related to the participant's assessment of their partner's behavior (e.g., the partner's agency)
 * Integrating individual-level differences in temperament into the model
-* Challenging the assumption that the predictors are linear and additive by using a nonlinear model.
+* Challenging the assumption that the predictors are linear and by using a nonlinear model.
 
 Mental processes can be highly complex, so it may not be immediately clear which variables to use in constructing a cognitive model. Luckily, the Bayesian framework provides us with a robust, interpretable system in which to situate these explorations.  
+
+What we showed in this tutorial is only one (relatively basic) method for constructing a cognitive model. If you want to learn how to build more complex and expressive cognitive models, I encourage you to check out probabilistic programming languages (PPLs). Additionally, cognitive models often work better with data collected specifically for use in cognitive modeling, e.g., data from tasks involving predictions or cognitive biases. The data we used here were collected for more general purposes, which may be why our models were not super explanatory.
+
+Check out the resources below to continue your cognitive modeling journey!
 
 ## Additional resources
 
