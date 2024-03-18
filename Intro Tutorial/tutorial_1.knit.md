@@ -1,5 +1,5 @@
 ---
-title: "Bayesian statistics for the social scientist"
+title: "Bayesian Basics"
 output:
   html_document:
     toc: true
@@ -17,9 +17,7 @@ editor_options:
 
 <font size="4">
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 **Technical objective:** Understand the general premises and mechanisms of the Bayesian approach to statistical analysis
 
@@ -27,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1 Frequentist vs. Bayesian statistics
 
-At some point in your education, you've probably learned about statistics, whether that be from a class, a book, or a YouTube video. When students learn about statistics in school, they typically learn what is called *frequentist statistics*. Frequentist statistics covers topics such as null hypothesis significance testing, *p*-values, and confidence intervals. You may be surprised to learn that this standard set of statistical methods is really more of a framework &mdash; a framework that is increasingly being called into question.
+At some point in your education, you've probably learned about statistics, whether that be from a class, a book, or a YouTube video. When students learn about statistics in school, they typically learn what is called *frequentist statistics*. Frequentist statistics covers topics such as null hypothesis significance testing, *p*-values, and confidence intervals. You may be surprised to learn that this standard set of statistical methods is really more of a framework--and that there exist other plausible frameworks for statistical analyis.
 
 A link that provides some good explanations for students' future use: https://www.austincc.edu/mparker/stat/nov04/talk_nov04.pdf
 
