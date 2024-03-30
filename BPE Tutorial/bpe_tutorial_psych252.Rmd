@@ -1,6 +1,5 @@
 ---
-title: "Modeling with uncertainty: A Bayesian parameter estimation tutorial"
-author: "Julia Fischer"
+title: "Modeling with Uncertainty: A Bayesian Parameter Estimation Tutorial"
 output:
   html_document:
     toc: true
