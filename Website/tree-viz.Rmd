@@ -1,0 +1,29 @@
+---
+title: "Phylogenetic Tree Visualization"
+author: "Julia Fischer"
+date: "2024-03-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r trees}
+library(treeio)
+library(ggtree)
+
+tree <- rtree(150)
+
+ggtree(tree, layout="circular", color="darkslategray4") +
+  geom_nodepoint(color="darkolivegreen1", alpha=0.25, size=9) +
+  geom_tippoint(color="slateblue", shape=18, size=1.5)
+
+ggtree(tree, layout="circular", color="lightgoldenrod4") +
+  geom_nodepoint(color="lightsalmon", alpha=0.25, size=9) +
+  geom_tippoint(color="khaki1", shape=21, size=2)
+
+ggtree(tree, layout="ellipse", color="chocolate4") +
+  geom_nodepoint(color="olivedrab4", alpha=0.25, size=9) +
+  geom_tippoint(color="hotpink3", shape=8, size=2.5)
+```
