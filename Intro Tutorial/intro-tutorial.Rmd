@@ -1,6 +1,7 @@
 ---
 title: "Bayesian Basics"
 output:
+  pdf_document: default
   html_document:
     toc: true
     toc_float: true
@@ -9,7 +10,6 @@ output:
     number_sections: true
     theme: flatly
     highlight: tango
-  pdf_document: default
   word_document: default
 editor_options:
   chunk_output_type: inline
@@ -21,16 +21,54 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-**Technical objective:** Understand the general premises and mechanisms of the Bayesian approach to statistical analysis
+# Introduction
 
-**Substantive objective:** N/A
+## Technical objective
 
-# 1 Frequentist vs. Bayesian statistics
+Understand the general premises and mechanisms of the Bayesian approach to statistical analysis
 
-At some point in your education, you've probably learned about statistics, whether that be from a class, a book, or a YouTube video. When students learn about statistics in school, they typically learn what is called *frequentist statistics*. Frequentist statistics covers topics such as null hypothesis significance testing, *p*-values, and confidence intervals. You may be surprised to learn that this standard set of statistical methods is really more of a framework--and that there exist other plausible frameworks for statistical analyis.
+## Tutorial overview
 
-A link that provides some good explanations for students' future use: https://www.austincc.edu/mparker/stat/nov04/talk_nov04.pdf
+In this tutorial, we begin laying the groundwork for understanding the Bayesian approach to statistics and data analysis. We first describe frequentist statistics as a familiar framework with which to conrast Bayesian statistics. We then introduce Bayes' theorem, the key mathematical relationship underlying the Bayesian approach. Next, we preview some of the applied analysis methods based on Bayes' theorem. We conclude with a discussion of the philosophical merit of Bayesian methods, especially for those conducting psychological research.
 
-TODO: provide sufficient mathematical detail/scaffolding to set people up to really *understand* Bayesian methods
+# Review of frequentist statistics
+
+At some point in your education, you've probably learned about statistics, whether that be from a class, a book, or a YouTube video. When students learn about statistics in school, they typically learn what is called *frequentist statistics*. Frequentist statistics covers topics such as null hypothesis significance testing, *p*-values, and confidence intervals. You may be surprised to learn that this standard set of statistical methods is really more of a framework--and that there exist other plausible frameworks for statistical analysis.  
+
+In order to make helpful contrasts with these other frameworks, it is important to first have a solid understanding of what frequentist statistics is. A key tenet of the frequentist framework is the frequentist interpretation of probability: the probability that an event occurs is defined by the long-term frequency, or observed proportion in the space of all possible relevant events, of that event (Romeijn, 2022).  
+
+For example, consider rolling a fair six-sided die. Suppose we are interested in the event of rolling a six. If we roll the die, say, 10 times, we will get some number of sixes. We are likely to have one six or two sixes, and we may even have zero sixes. The proportion of sixes we see, with respect to all possible events (i.e., rolling any number), in each of these cases is $\frac{1}{10}$, $\frac{2}{10}$, and $\frac{0}{10}$, respectively. Obviously, with only 10 rolls of the die, the frequency of rolling a six does not reveal the true probability of rolling a six, which we know to be $\frac{1}{6}$. However, if we roll the die 10,000 or 100,000 times, we will likely roll six in close to $\frac{1}{6}$ of our rolls. If we could roll the die a number of times that approaches infinity, we would see that the proportion of rolls that are sixes converges to exactly $\frac{1}{6}$. This 'limit-at-infinity' [TODO: check whether 'limit-at-infinity' is an okay way to phrase this] convergence to the true probability represents what we mean by a frequentist long-run probability.  
+
+```{r frequentist simulation}
+# TODO: make a die-rolling simulation where you first simulate with 10 rolls of the die + plot the proportion of sixes (as a fraction of all rolls) individually for a few runs of the simultaion; then repeat with 10,000/100,000/etc. rolls
+# TODO: need to find the R command for a list of binomials--what is the multivariate binomial distribution called?
+# TODO: split up the text with the two simulations as you see fit
+```
+
+In frequentist data analysis, we are generally interested in evaluating the plausibility of a proposed data-generating hypothesis, as compared to a null hypothesis. In other words, we want to see if there is a statistically-indicated interesting relationship between our variables, as opposed to no relationship at all. This is evaluation is made using a framework called null hypothesis significance testing (NHST).
+
+TODO: complete the explanation of NHST, emphasizing the role of frequentist probability
+
+# Bayes' theorem
+
+TODO: What is Bayes’ theorem? What is it derived from? What does it mean (individual terms and altogether)?
+TODO: Code up a simulation that produces a prior (normal) distribution and an evidence distribution, then combines them via Bayes theorem to produce a posterior distribution; color code the distributions and present them graphically in the same visualization
+
+# Applying Bayes' theorem
+
+TODO: How can we apply Bayes' theorem to the analysis of data, in general? Contrast the Bayesian interpretation of probability with the frequentist interpretation of probability; likewise, contrast the Bayesian way of evaluating hypotheses with the frequentist way
+TODO: Brief overview of BPE, BNs, BCM--with a suggestion to read those dedicated tutorials if one has particular interest
+NOTE: Consider making each of these TODOs its own section if each one has enough content; if you do split them up, make that clear in the tutorial overview section
+
+# Philosophical merits of Bayesianism
+TODO: Why are Bayesian approaches interesting/important theoretically (in general and for psychology in particular)?
+
+# Further reading
+TODO: add links with brief preceding labels, as in the BPE tutorial
+TODO: add this link: https://www.austincc.edu/mparker/stat/nov04/talk_nov04.pdf
+
+# References
+
+Romeijn, J.-W. (2022). Philosophy of statistics. In E. N. Zalta & U. Nodelman (Eds.), *The Stanford Encyclopedia of Philosophy* (Fall 2022). Metaphysics Research Lab, Stanford University.
 
 </font>
