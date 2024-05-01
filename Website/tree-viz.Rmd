@@ -1,7 +1,7 @@
 ---
 title: "Phylogenetic Tree Visualization"
 author: "Julia Fischer"
-date: "2024-03-17"
+date: "Spring 2024"
 output: html_document
 ---
 
@@ -9,21 +9,137 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r trees}
+```{r libraries}
 library(treeio)
 library(ggtree)
+library(TraMineR)
+library(cluster)
+library(tidyverse)
+```
 
-tree <- rtree(150)
+# Randomly generated trees
 
-ggtree(tree, layout="circular", color="darkslategray4") +
+```{r random trees}
+# Generate random tree
+random_tree <- rtree(150)
+
+# Plot in a few different styles
+ggtree(random_tree, layout="circular", color="darkslategray4") +
   geom_nodepoint(color="darkolivegreen1", alpha=0.25, size=9) +
   geom_tippoint(color="slateblue", shape=18, size=1.5)
 
-ggtree(tree, layout="circular", color="lightgoldenrod4") +
+ggtree(random_tree, layout="circular", color="lightgoldenrod4") +
   geom_nodepoint(color="lightsalmon", alpha=0.25, size=9) +
   geom_tippoint(color="khaki1", shape=21, size=2)
 
-ggtree(tree, layout="ellipse", color="chocolate4") +
+ggtree(random_tree, layout="ellipse", color="chocolate4") +
   geom_nodepoint(color="olivedrab4", alpha=0.25, size=9) +
   geom_tippoint(color="hotpink3", shape=8, size=2.5)
+```
+
+# Conversation sequence trees
+
+## Read in conversation data
+
+```{r read in data}
+# Read in the repeated measures data
+convo_data <- read.csv(file = "StrangerConversations_N59.csv", head = TRUE, sep = ",")
+
+# View the first 10 rows of the repeated measures data
+head(convo_data, 10)
+
+# Condense Elaboration, HedgedDisclosure, and Reflection categories into a single "Sharing" category
+convo_data <- convo_data %>%
+  mutate(turn_type_grouped = fct_collapse(turn_type,
+                            sharing = c("Elaboration", "HedgedDisclosure", "Reflection"),
+                            advice = c("Advice"),
+                            question = c("Question"),
+                            acknowledgement = c("Acknowledgement"))) %>%
+  mutate(nucleobase = fct_recode(turn_type_grouped,
+                             a = "sharing",
+                             c = "advice",
+                             g = "question",
+                             t = "acknowledgement"
+  ))
+```
+
+## Prepare data for sequence analysis
+
+```{r prepare data}
+# Pivot to wide data
+sequence_data <- reshape(
+  data = convo_data[, c("id", "turn", "nucleobase")],
+  timevar = "turn",           
+  idvar = "id",
+  v.names = "nucleobase",
+  direction = "wide",
+  sep = "")
+
+# Create alphabet and labels
+nucleotide_alphabet <- c("a", "c", "g", "t")
+nucleotide_labels <- c("a", "c", "g", "t")
+
+# Set nucleotide colors
+a <- "red"
+c <- "blue"
+g <- "green"
+t <- "orange"
+
+# Create sequence object
+sequences <- seqdef(sequence_data,  
+                   var = 2:148,
+                   alphabet = nucleotide_alphabet,
+                   labels = nucleotide_labels,
+                   xtstep = 25,
+                   cpal=c(a, c, g, t))
+```
+
+## Plot sequences
+
+```{r plot sequences}
+seqIplot(sequences,
+         with.legend = "right",
+         cex.legend = 0.6,
+         main = "Nucleobase Sequences (Support Conversation)")
+```
+
+## Create substitution cost matrix and dissimilarity matrix
+
+```{r cost matrix}
+cost_matrix <- seqsubm(sequences,
+                      method = "CONSTANT",
+                      cval = 2,
+                      with.missing = TRUE,
+                      miss.cost = 1,
+                      time.varying = FALSE,
+                      weighted = TRUE)
+
+dissim_matrix <- seqdist(sequences,
+                   method = "OM",
+                   indel = 1.0,
+                   sm = cost_matrix,
+                   with.missing = TRUE)
+```
+
+## Determine hierarchical clusters and plot in a few styles
+
+```{r cluster plots}
+hierarchical_clusters <- agnes(dissim_matrix, diss = TRUE, method = "ward")
+
+# Basic tree
+ggtree(hierarchical_clusters, color="palevioletred4", size=1) + theme_tree("mistyrose")
+
+# Stylized trees
+ggtree(hierarchical_clusters, layout="circular", color="darkslategray4") +
+  geom_nodepoint(color="chartreuse4", alpha=0.25, size=9) +
+  geom_tippoint(color="slateblue", shape=18, size=2)
+
+ggtree(hierarchical_clusters, layout="circular", color="lightgoldenrod4") +
+  geom_nodepoint(color="lightsalmon", alpha=0.25, size=9) +
+  geom_tippoint(color="goldenrod3", shape=21, size=4)
+
+ggtree(hierarchical_clusters, layout="ellipse", color="chocolate4") +
+  coord_flip() +
+  geom_nodepoint(color="olivedrab4", alpha=0.25, size=12) +
+  geom_tippoint(color="violetred2", shape=8, size=3)
 ```
