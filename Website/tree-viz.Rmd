@@ -49,58 +49,85 @@ convo_data <- read.csv(file = "StrangerConversations_N59.csv", head = TRUE, sep 
 head(convo_data, 10)
 
 # Condense Elaboration, HedgedDisclosure, and Reflection categories into a single "Sharing" category
-convo_data <- convo_data %>%
-  mutate(turn_type_grouped = fct_collapse(turn_type,
-                            sharing = c("Elaboration", "HedgedDisclosure", "Reflection"),
-                            advice = c("Advice"),
-                            question = c("Question"),
-                            acknowledgement = c("Acknowledgement"))) %>%
-  mutate(nucleobase = fct_recode(turn_type_grouped,
-                             a = "sharing",
-                             c = "advice",
-                             g = "question",
-                             t = "acknowledgement"
-  ))
+# convo_data <- convo_data %>%
+#   mutate(turn_type_grouped = fct_collapse(turn_type,
+#                             sharing = c("Elaboration", "HedgedDisclosure", "Reflection"),
+#                             advice = c("Advice"),
+#                             question = c("Question"),
+#                             acknowledgement = c("Acknowledgement"))) %>%
+#   mutate(nucleobase = fct_recode(turn_type_grouped,
+#                              a = "sharing",
+#                              c = "advice",
+#                              g = "question",
+#                              t = "acknowledgement"
+#   ))
 ```
 
 ## Prepare data for sequence analysis
 
 ```{r prepare data}
 # Pivot to wide data
+# sequence_data <- reshape(
+#   data = convo_data[, c("id", "turn", "nucleobase")],
+#   timevar = "turn",           
+#   idvar = "id",
+#   v.names = "nucleobase",
+#   direction = "wide",
+#   sep = "")
+
 sequence_data <- reshape(
-  data = convo_data[, c("id", "turn", "nucleobase")],
+  data = convo_data[, c("id", "turn", "turn_type")],
   timevar = "turn",           
   idvar = "id",
-  v.names = "nucleobase",
+  v.names = "turn_type",
   direction = "wide",
   sep = "")
 
 # Create alphabet and labels
-nucleotide_alphabet <- c("a", "c", "g", "t")
-nucleotide_labels <- c("a", "c", "g", "t")
+alphabet <- c("Elaboration", "HedgedDisclosure", "Reflection", "Advice", "Question", "Acknowledgement")
+labels <- c("Elaboration", "HedgedDisclosure", "Reflection", "Advice", "Question", "Acknowledgement")
 
 # Set nucleotide colors
-a <- "red"
-c <- "blue"
-g <- "green"
-t <- "orange"
+# a <- "red"
+# c <- "blue"
+# g <- "green"
+# t <- "orange"
+
+Elaboration <- "red"
+HedgedDisclosure <- "blue"
+Reflection <- "green"
+Advice <- "orange"
+Question <-"yellow"
+Acknowledgement <- "purple"
 
 # Create sequence object
+# sequences <- seqdef(sequence_data,  
+#                    var = 2:148,
+#                    alphabet = nucleotide_alphabet,
+#                    labels = nucleotide_labels,
+#                    xtstep = 25,
+#                    cpal=c(a, c, g, t))
+
 sequences <- seqdef(sequence_data,  
                    var = 2:148,
-                   alphabet = nucleotide_alphabet,
-                   labels = nucleotide_labels,
+                   alphabet = alphabet,
+                   labels = labels,
                    xtstep = 25,
-                   cpal=c(a, c, g, t))
+                   cpal=c(Elaboration, HedgedDisclosure, Reflection, Advice, Question, Acknowledgement))
 ```
 
 ## Plot sequences
 
 ```{r plot sequences}
+# seqIplot(sequences,
+#          with.legend = "right",
+#          cex.legend = 0.6,
+#          main = "Nucleobase Sequences (Support Conversation)")
+
 seqIplot(sequences,
          with.legend = "right",
          cex.legend = 0.6,
-         main = "Nucleobase Sequences (Support Conversation)")
+         main = "Support Conversation Sequences")
 ```
 
 ## Create substitution cost matrix and dissimilarity matrix
