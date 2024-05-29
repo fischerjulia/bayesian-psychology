@@ -1,5 +1,5 @@
 ---
-title: "The probabilistic mind: A Bayesian cognitive modeling tutorial"
+title: "BCM Tutorial: Old Version"
 author: "Julia Fischer"
 output:
   html_document:
