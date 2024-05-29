@@ -1,21 +1,43 @@
 ---
-title: "Modeling with Uncertainty: A Bayesian Parameter Estimation Tutorial"
+title: "Modeling With Uncertainty: A Bayesian Parameter Estimation Tutorial"
+author: "Julia Fischer"
 output:
-  html_document:
-    toc: true
-    toc_float: true
-    toc_depth: 4
-    code_download: true
-    number_sections: true
-    theme: flatly
-    highlight: tango
   pdf_document: default
-  word_document: default
-editor_options:
-  chunk_output_type: inline
+  rmdformats::robobook:
+    toc_depth: 3
+    gallery: TRUE
+    lightbox: TRUE
+editor_options: 
+  chunk_output_type: console
+  markdown: 
+    wrap: sentence
 ---
 
-<font size="4">
+```{=html}
+<style type="text/css">
+  body, html{
+    font-family: Helvetica;
+}
+.book .book-body .page-inner section.normal h1{
+  font-family: Source Sans Pro;
+  font-weight: bold;
+  color:#8c1515;
+} 
+.book .book-body .page-inner section.normal h2,
+.book .book-body .page-inner section.normal h3, 
+.book .book-body .page-inner section.normal h4{
+  font-family: Source Sans Pro;
+  font-weight: bold;
+}
+
+.book .book-body .page-inner section.normal table  td,
+.book .book-body .page-inner section.normal pre>code.r,
+.book .book-body .page-inner section.normal pre{
+   font-family: Andale Mono;
+}
+
+</style>
+```
 
 # Introduction
 
@@ -31,7 +53,7 @@ In this tutorial, we will be applying the Bayesian lens to the estimation of par
 ## Emotion regulation
 In the following Bayesian data analysis models, we will examine two emotion regulation strategies, **cognitive reappraisal** and **expressive suppression**, and whether they moderate the association between **hours of sleep** at night and **negative affect** the following day.
 
-Briefly, in **cognitive reappraisal**, one changes the way in which they think about an emotionally-inducing event in order to alter their emotional response to that event. For example, instead of thinking about an exam as a difficult and consequential test of their abilities, a student might choose to frame the exam as an opportunity to show what they have learned. In **expressive suppression**, one regulates their emotions by inhibiting their external displays of emotion. For example, a student who feels nervous about an upcoming exam may stop themselves from showing a worried look on their face and telling their friends that they feel nervous. More information on these two emotion regulation strategies can be found in Gross & John (2003).
+Briefly, in **cognitive reappraisal**, one changes the way in which they think about an emotion-inducing event in order to alter their emotional response to that event. For example, instead of thinking about an exam as a difficult and consequential test of their abilities, a student might choose to frame the exam as an opportunity to show what they have learned. In **expressive suppression**, one regulates their emotions by inhibiting their external displays of emotion. For example, a student who feels nervous about an upcoming exam may stop themselves from showing a worried look on their face and telling their friends that they feel nervous. More information on these two emotion regulation strategies can be found in Gross & John (2003).
 
 ## The present study: Emotion regulation, sleep, and negative affect
 
@@ -62,7 +84,7 @@ We read in the data from the online repository.
 filepath <-
   "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_persons.csv"
 # read in the .csv file using the url() function
-AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
+AMIB_persons <- read.csv(file=url(filepath), header=TRUE)
 ```
 
 ```{r day-level data}
@@ -70,7 +92,7 @@ AMIB_persons <- read.csv(file=url(filepath),header=TRUE)
 filepath <-
   "https://raw.githubusercontent.com/The-Change-Lab/collaborations/main/AMIB/AMIB_daily.csv"
 # read in the .csv file using the url() function
-AMIB_daily <- read.csv(file=url(filepath),header=TRUE)
+AMIB_daily <- read.csv(file=url(filepath), header=TRUE)
 ```
 
 ## Data manipulation
@@ -343,6 +365,4 @@ Joyce, J. (2021). Bayes’ theorem (E. N. Zalta, Ed.). *The Stanford Encyclopedi
 
 Kahn, M., Sheppes, G., & Sadeh, A. (2013). Sleep and emotions: Bidirectional links and underlying mechanisms. *International Journal of Psychophysiology*, *89*(2), 218–228. https://doi.org/10.1016/j.ijpsycho.2013.05.010
 
-Ram, N., Conroy, D. E., Pincus, A. L., Hyde, A. L., & Molloy, L. E. (2012). Tethering theory to method: Using measures of intraindividual variability to operationalize individuals’ dynamic characteristics. In G. Hancock & J. Harring (Eds.), *Advances in longitudinal methods in the social and behavioral sciences* (pp. 81-110). New York: Information Age.
-
-</font>
+Ram, N., Conroy, D. E., Pincus, A. L., Hyde, A. L., & Molloy, L. E. (2012). Tethering theory to method: Using measures of intraindividual variability to operationalize individuals’ dynamic characteristics. In G. Hancock & J. Harring (Eds.), *Advances in longitudinal methods in the social and behavioral sciences* (pp. 81–110). New York: Information Age.  
